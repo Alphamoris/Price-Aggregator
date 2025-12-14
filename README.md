@@ -49,45 +49,6 @@ npm run dev
 docker-compose up --build
 ```
 
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         Frontend (Next.js)                       │
-│  ┌─────────┐  ┌─────────────┐  ┌────────────┐  ┌─────────────┐  │
-│  │ Landing │  │    Login    │  │  Register  │  │  Dashboard  │  │
-│  └────┬────┘  └──────┬──────┘  └─────┬──────┘  └──────┬──────┘  │
-└───────┼──────────────┼───────────────┼────────────────┼─────────┘
-        │              │               │                │
-        └──────────────┴───────────────┴────────────────┘
-                                │
-                          HTTP/REST + JWT
-                                │
-┌───────────────────────────────┴─────────────────────────────────┐
-│                      Backend (FastAPI)                           │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │                     Routers                               │   │
-│  │  /auth (login, register)  /assets (CRUD)  /health        │   │
-│  └────────────────────────────┬─────────────────────────────┘   │
-│                               │                                  │
-│  ┌────────────────────────────┴─────────────────────────────┐   │
-│  │                    Services                               │   │
-│  │  UserService  AssetService  CryptoService  StockService  │   │
-│  └─────────┬────────────┬───────────┬───────────┬───────────┘   │
-│            │            │           │           │                │
-│  ┌─────────┴────┐ ┌─────┴─────┐ ┌───┴───┐ ┌─────┴─────┐         │
-│  │   Database   │ │   Cache   │ │ CoinG │ │ AlphaVan  │         │
-│  │  (SQLite/    │ │ (In-mem   │ │  API  │ │   API     │         │
-│  │  PostgreSQL) │ │ TTLCache) │ └───────┘ └───────────┘         │
-│  └──────────────┘ └───────────┘                                  │
-│                                                                  │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │                   Background Tasks                        │   │
-│  │              APScheduler (5-min refresh)                  │   │
-│  └──────────────────────────────────────────────────────────┘   │
-└──────────────────────────────────────────────────────────────────┘
-```
-
 ## Architecture Decisions
 
 ### 1. Data Sources
@@ -96,8 +57,6 @@ docker-compose up --build
 |--------|------|------------|-----|
 | CoinGecko | Crypto | 30/min, 10k/month | Free, reliable, no API key required |
 | Alpha Vantage | Stocks | 5/min, 25/day | Free tier available, widely used |
-
-**Trade-off:** Limited stock data due to Alpha Vantage's strict daily limit. In production, would use a paid tier or alternative source.
 
 ### 2. Database: SQLite (dev) / PostgreSQL (prod)
 
@@ -259,52 +218,6 @@ GitHub Actions pipeline:
                     All must pass
 ```
 
-## Environment Variables
-
-### Backend (.env)
-
-```
-SECRET_KEY=your-secret-key-here
-DATABASE_URL=sqlite+aiosqlite:///./data/app.db
-ALPHAVANTAGE_API_KEY=your-api-key
-LOG_LEVEL=INFO
-LOG_FORMAT=json
-CORS_ORIGINS=["http://localhost:3000"]
-```
-
-### Frontend (.env.local)
-
-```
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
-
-## Project Structure
-
-```
-├── backend/
-│   ├── app/
-│   │   ├── main.py           # FastAPI app
-│   │   ├── config.py         # Settings
-│   │   ├── database.py       # SQLAlchemy setup
-│   │   ├── dependencies.py   # Auth dependencies
-│   │   ├── models/           # SQLAlchemy models
-│   │   ├── schemas/          # Pydantic schemas
-│   │   ├── routers/          # API endpoints
-│   │   ├── services/         # Business logic
-│   │   ├── tasks/            # Background jobs
-│   │   └── utils/            # Logging, security, exceptions
-│   ├── tests/
-│   ├── Dockerfile
-│   └── requirements.txt
-├── frontend/
-│   ├── app/                  # Next.js pages
-│   ├── components/           # React components
-│   ├── lib/                  # API client, hooks
-│   └── Dockerfile
-├── docker-compose.yml
-└── .github/workflows/ci.yml
-```
-
 ## What I'd Improve With More Time
 
 ### High Priority
@@ -328,6 +241,8 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 11. **Admin dashboard** - Manual refresh, user management
 12. **Historical data** - Price charts, trend analysis
 
-## License
+---
 
-MIT
+<div align="center">
+  <img src="frontend/public/pegasus1.jpg" alt="Alphamoris" width="50"/> &nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp; <em>Built by</em> &nbsp;<strong>ALPHAMORIS</strong>
+</div>
