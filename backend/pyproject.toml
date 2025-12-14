@@ -21,7 +21,11 @@ select = [
     "SIM",
 ]
 ignore = [
-    "E501",
+    "E501",    
+    "B008",    
+    "B904",    
+    "N818",    
+    "SIM118",  
 ]
 
 [tool.ruff.lint.isort]
