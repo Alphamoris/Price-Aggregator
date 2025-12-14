@@ -15,7 +15,7 @@ class Settings(BaseSettings):
 
     database_url: str = Field(default=f"sqlite+aiosqlite:///{BASE_DIR}/data/app.db")
 
-    secret_key: str = Field(default="change-this-in-production-use-openssl-rand-hex-32")
+    secret_key: str = Field(default="34t643t43t43t434364565467t43t43t43t43t43t43t43t43t4")
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 
