@@ -1,12 +1,14 @@
+from math import ceil
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from math import ceil
+
 from app.database import get_db
-from app.models.user import User
+from app.dependencies import get_admin_user, get_current_active_user
 from app.models.asset import AssetType, DataSource
-from app.schemas.asset import AssetResponse, AssetListResponse, AssetRefreshResponse, AssetFilter
+from app.models.user import User
+from app.schemas.asset import AssetFilter, AssetListResponse, AssetRefreshResponse, AssetResponse
 from app.services.asset_service import AssetService
-from app.dependencies import get_current_active_user, get_admin_user
 
 router = APIRouter(prefix="/assets", tags=["Assets"])
 
@@ -28,10 +30,10 @@ async def list_assets(
         page=page,
         page_size=page_size
     )
-    
+
     asset_service = AssetService(db)
     assets, total = await asset_service.get_assets(filters)
-    
+
     return AssetListResponse(
         items=[AssetResponse.model_validate(a) for a in assets],
         total=total,
@@ -50,7 +52,7 @@ async def list_crypto_assets(
 ):
     asset_service = AssetService(db)
     assets, total = await asset_service.get_cryptos(page=page, page_size=page_size)
-    
+
     return AssetListResponse(
         items=[AssetResponse.model_validate(a) for a in assets],
         total=total,
@@ -69,7 +71,7 @@ async def list_stock_assets(
 ):
     asset_service = AssetService(db)
     assets, total = await asset_service.get_stocks(page=page, page_size=page_size)
-    
+
     return AssetListResponse(
         items=[AssetResponse.model_validate(a) for a in assets],
         total=total,
@@ -95,7 +97,7 @@ async def refresh_assets(
 ):
     asset_service = AssetService(db)
     results = await asset_service.refresh_all_data()
-    
+
     message = "Data refresh completed"
     if not results["crypto_success"] and not results["stock_success"]:
         message = "Data refresh failed for all sources"
@@ -103,7 +105,7 @@ async def refresh_assets(
         message = "Crypto data refresh failed, stocks updated"
     elif not results["stock_success"]:
         message = "Stock data refresh failed, crypto updated"
-    
+
     return AssetRefreshResponse(
         crypto_count=results["crypto_count"],
         stock_count=results["stock_count"],

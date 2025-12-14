@@ -12,7 +12,7 @@ async def test_register_user(client: AsyncClient):
             "password": "testpassword123"
         }
     )
-    
+
     assert response.status_code == 201
     data = response.json()
     assert data["username"] == "testuser"
@@ -31,7 +31,7 @@ async def test_register_duplicate_username(client: AsyncClient):
             "password": "testpassword123"
         }
     )
-    
+
     response = await client.post(
         "/api/v1/auth/register",
         json={
@@ -40,7 +40,7 @@ async def test_register_duplicate_username(client: AsyncClient):
             "password": "testpassword123"
         }
     )
-    
+
     assert response.status_code == 422
     assert "Username already exists" in response.json()["error"]
 
@@ -55,7 +55,7 @@ async def test_login_success(client: AsyncClient):
             "password": "testpassword123"
         }
     )
-    
+
     response = await client.post(
         "/api/v1/auth/login",
         data={
@@ -63,7 +63,7 @@ async def test_login_success(client: AsyncClient):
             "password": "testpassword123"
         }
     )
-    
+
     assert response.status_code == 200
     data = response.json()
     assert "access_token" in data
@@ -79,14 +79,14 @@ async def test_login_invalid_credentials(client: AsyncClient):
             "password": "wrongpassword"
         }
     )
-    
+
     assert response.status_code == 401
 
 
 @pytest.mark.asyncio
 async def test_protected_endpoint_without_token(client: AsyncClient):
     response = await client.get("/api/v1/assets")
-    
+
     assert response.status_code == 401
 
 
@@ -100,7 +100,7 @@ async def test_protected_endpoint_with_token(client: AsyncClient):
             "password": "testpassword123"
         }
     )
-    
+
     login_response = await client.post(
         "/api/v1/auth/login",
         data={
@@ -108,12 +108,12 @@ async def test_protected_endpoint_with_token(client: AsyncClient):
             "password": "testpassword123"
         }
     )
-    
+
     token = login_response.json()["access_token"]
-    
+
     response = await client.get(
         "/api/v1/assets",
         headers={"Authorization": f"Bearer {token}"}
     )
-    
+
     assert response.status_code == 200

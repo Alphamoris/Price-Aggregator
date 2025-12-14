@@ -1,6 +1,8 @@
-from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from decimal import Decimal
+
+from pydantic import BaseModel, ConfigDict, Field
+
 from app.models.asset import AssetType, DataSource
 
 

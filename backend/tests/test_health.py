@@ -5,7 +5,7 @@ from httpx import AsyncClient
 @pytest.mark.asyncio
 async def test_health_endpoint(client: AsyncClient):
     response = await client.get("/api/v1/health")
-    
+
     assert response.status_code == 200
     data = response.json()
     assert data["status"] in ["healthy", "unhealthy"]
@@ -18,7 +18,7 @@ async def test_health_endpoint(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_dependencies_endpoint(client: AsyncClient):
     response = await client.get("/api/v1/health/dependencies")
-    
+
     assert response.status_code == 200
     data = response.json()
     assert data["status"] in ["healthy", "degraded", "unhealthy"]
@@ -27,7 +27,7 @@ async def test_dependencies_endpoint(client: AsyncClient):
     assert "cache" in data["checks"]
     assert "coingecko" in data["checks"]
     assert "alphavantage" in data["checks"]
-    
+
     for check_name in ["database", "cache", "coingecko", "alphavantage"]:
         check = data["checks"][check_name]
         assert "status" in check
@@ -37,7 +37,7 @@ async def test_dependencies_endpoint(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_root_endpoint(client: AsyncClient):
     response = await client.get("/")
-    
+
     assert response.status_code == 200
     data = response.json()
     assert "name" in data

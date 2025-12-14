@@ -1,8 +1,11 @@
-from sqlalchemy import String, DateTime, Numeric, Enum as SQLEnum
-from sqlalchemy.orm import Mapped, mapped_column
-from datetime import datetime, timezone
-from decimal import Decimal
 import enum
+from datetime import UTC, datetime
+from decimal import Decimal
+
+from sqlalchemy import DateTime, Numeric, String
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.orm import Mapped, mapped_column
+
 from app.database import Base
 
 
@@ -31,12 +34,12 @@ class Asset(Base):
     fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc)
+        default=lambda: datetime.now(UTC)
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc)
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC)
     )
 
     __table_args__ = (

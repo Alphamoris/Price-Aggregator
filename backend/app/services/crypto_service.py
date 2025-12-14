@@ -1,12 +1,14 @@
-import httpx
 import asyncio
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
+
+import httpx
+
 from app.config import get_settings
-from app.utils.logging import get_logger
-from app.utils.exceptions import ExternalAPIError, RateLimitError
 from app.models.asset import AssetType, DataSource
+from app.utils.exceptions import ExternalAPIError, RateLimitError
+from app.utils.logging import get_logger
 
 settings = get_settings()
 logger = get_logger(__name__)
@@ -24,7 +26,7 @@ class CryptoService:
 
     async def _make_request(self, endpoint: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
         if self._circuit_open:
-            if self._circuit_reset_time and datetime.now(timezone.utc) > self._circuit_reset_time:
+            if self._circuit_reset_time and datetime.now(UTC) > self._circuit_reset_time:
                 self._circuit_open = False
                 self._circuit_failures = 0
                 logger.info("circuit_breaker_reset", service="coingecko")
@@ -36,23 +38,23 @@ class CryptoService:
                 )
 
         url = f"{self.base_url}/{endpoint}"
-        
+
         for attempt in range(self.max_retries):
             try:
                 async with httpx.AsyncClient(timeout=30.0) as client:
                     response = await client.get(url, params=params)
-                    
+
                     if response.status_code == 429:
                         retry_after = int(response.headers.get("Retry-After", 60))
                         raise RateLimitError(
                             message="CoinGecko rate limit exceeded",
                             retry_after=retry_after
                         )
-                    
+
                     response.raise_for_status()
                     self._circuit_failures = 0
                     return response.json()
-                    
+
             except httpx.HTTPStatusError as e:
                 logger.warning(
                     "coingecko_request_failed",
@@ -66,7 +68,7 @@ class CryptoService:
                         message=f"CoinGecko API error: {e.response.status_code}",
                         source="coingecko"
                     )
-                    
+
             except httpx.RequestError as e:
                 logger.warning(
                     "coingecko_connection_error",
@@ -80,18 +82,18 @@ class CryptoService:
                         message=f"CoinGecko connection error: {str(e)}",
                         source="coingecko"
                     )
-            
+
             delay = self.base_delay * (2 ** attempt)
             await asyncio.sleep(delay)
-        
+
         raise ExternalAPIError(message="Max retries exceeded", source="coingecko")
 
     def _handle_failure(self) -> None:
         self._circuit_failures += 1
         if self._circuit_failures >= self._circuit_threshold:
             self._circuit_open = True
-            self._circuit_reset_time = datetime.now(timezone.utc).replace(
-                minute=datetime.now(timezone.utc).minute + 5
+            self._circuit_reset_time = datetime.now(UTC).replace(
+                minute=datetime.now(UTC).minute + 5
             )
             logger.warning(
                 "circuit_breaker_opened",
@@ -101,7 +103,7 @@ class CryptoService:
 
     async def fetch_top_cryptos(self, limit: int = 50) -> list[dict[str, Any]]:
         logger.info("fetching_crypto_data", limit=limit)
-        
+
         data = await self._make_request(
             "coins/markets",
             params={
@@ -113,10 +115,10 @@ class CryptoService:
                 "price_change_percentage": "24h"
             }
         )
-        
+
         assets = []
-        fetched_at = datetime.now(timezone.utc)
-        
+        fetched_at = datetime.now(UTC)
+
         for coin in data:
             assets.append({
                 "symbol": coin.get("symbol", "").upper(),
@@ -129,7 +131,7 @@ class CryptoService:
                 "source": DataSource.COINGECKO,
                 "fetched_at": fetched_at,
             })
-        
+
         logger.info("crypto_data_fetched", count=len(assets))
         return assets
 

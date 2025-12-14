@@ -8,7 +8,7 @@ import {
   useCallback,
   ReactNode,
 } from "react";
-import { api, Token } from "@/lib/api";
+import { api } from "@/lib/api";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -25,14 +25,13 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const token = api.getToken();
-    setIsAuthenticated(!!token);
-    setIsLoading(false);
-  }, []);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    if (typeof window !== "undefined") {
+      return !!api.getToken();
+    }
+    return false;
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
   const login = useCallback(async (username: string, password: string) => {
     await api.login(username, password);

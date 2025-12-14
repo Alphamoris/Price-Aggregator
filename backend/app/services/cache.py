@@ -1,5 +1,7 @@
+from typing import Any, Generic, TypeVar
+
 from cachetools import TTLCache
-from typing import TypeVar, Generic, Callable, Any
+
 from app.config import get_settings
 from app.utils.logging import get_logger
 

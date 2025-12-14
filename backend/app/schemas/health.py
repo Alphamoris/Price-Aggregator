@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class DatabaseStatus(BaseModel):
@@ -10,14 +10,14 @@ class DatabaseStatus(BaseModel):
 
 
 class HealthResponse(BaseModel):
-    status: Literal["healthy", "unhealthy"] 
+    status: Literal["healthy", "unhealthy"]
     timestamp: datetime
     database: DatabaseStatus
 
 
 class DependencyCheckResult(BaseModel):
-    status: Literal["healthy", "unhealthy"] 
-    latency_ms: float | None 
+    status: Literal["healthy", "unhealthy"]
+    latency_ms: float | None
     error: str | None
 
 
@@ -29,6 +29,6 @@ class DependencyChecks(BaseModel):
 
 
 class DependenciesResponse(BaseModel):
-    status: Literal["healthy", "degraded", "unhealthy"] 
-    timestamp: datetime 
+    status: Literal["healthy", "degraded", "unhealthy"]
+    timestamp: datetime
     checks: DependencyChecks

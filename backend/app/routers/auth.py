@@ -1,13 +1,15 @@
+from datetime import timedelta
+
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import timedelta
+
+from app.config import get_settings
 from app.database import get_db
+from app.schemas.auth import LoginRequest, Token
 from app.schemas.user import UserCreate, UserResponse
-from app.schemas.auth import Token, LoginRequest
 from app.services.user_service import UserService
 from app.utils.security import create_access_token
-from app.config import get_settings
 
 settings = get_settings()
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -30,12 +32,12 @@ async def login(
 ):
     user_service = UserService(db)
     user = await user_service.authenticate_user(form_data.username, form_data.password)
-    
+
     access_token = create_access_token(
         data={"sub": str(user.id), "username": user.username},
         expires_delta=timedelta(minutes=settings.access_token_expire_minutes)
     )
-    
+
     return Token(access_token=access_token, token_type="bearer")
 
 
@@ -46,10 +48,10 @@ async def login_json(
 ):
     user_service = UserService(db)
     user = await user_service.authenticate_user(login_data.username, login_data.password)
-    
+
     access_token = create_access_token(
         data={"sub": str(user.id), "username": user.username},
         expires_delta=timedelta(minutes=settings.access_token_expire_minutes)
     )
-    
+
     return Token(access_token=access_token, token_type="bearer")
